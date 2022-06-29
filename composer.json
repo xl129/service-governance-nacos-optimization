@@ -1,0 +1,42 @@
+{
+    "name": "yuanxinhealthy/service-governance-nacos-optimization",
+    "description": "优化hyperf-nacos服务发现、实现服务监听及服务自动下线",
+    "type": "library",
+    "keywords": [
+        "service-governance-nacos",
+        "php",
+        "swoole",
+        "hyperf",
+        "nacos"
+    ],
+    "autoload": {
+        "psr-4": {
+            "YuanxinHealthy\\ServiceGovernanceNacosOptimization\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "xionglin",
+            "email": "xionglin2@yuanxinjituan.com"
+        }
+    ],
+    "require": {
+        "hyperf/constants": "~2.2.0",
+        "hyperf/exception-handler": "~2.2.0",
+        "hyperf/nacos": "~2.2.0",
+        "hyperf/process": "^2.1",
+        "hyperf/server": "~2.2.0",
+        "hyperf/framework": "~2.2.0",
+        "hyperf/utils": "~2.2.0",
+        "hyperf/command": "~2.2.0",
+        "hyperf/event": "~2.2.0",
+        "hyperf/rpc-client": "~2.2.0",
+        "hyperf/service-governance": "~2.2.0",
+        "hyperf/service-governance-nacos": "v2.2.31.1"
+    },
+    "extra": {
+        "hyperf": {
+            "config": "YuanxinHealthy\\ServiceGovernanceNacosOptimization\\ConfigProvider"
+        }
+    }
+}

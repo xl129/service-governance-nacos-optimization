@@ -1,0 +1,8 @@
+.idea/
+nbproject/
+.phpstorm.meta.php
+runtime/
+vendor/
+.github/
+.env
+.phpunit.result.cache
