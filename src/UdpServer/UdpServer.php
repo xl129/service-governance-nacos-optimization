@@ -75,7 +75,10 @@ class UdpServer
                 return;
             }
 
-            $this->log('收到nacos消息', $data);
+            $this->log('收到nacos消息', [
+                'data' => $data,
+                'clientInfo' => $clientInfo
+            ]);
 
             $lastRefTime = strval(isset($data['lastRefTime']) ? intval($data['lastRefTime'] / 1000) : time());
             $response->setLastRefTime($lastRefTime);

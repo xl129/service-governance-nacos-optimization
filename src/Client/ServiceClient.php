@@ -2,6 +2,7 @@
 
 namespace YuanxinHealthy\ServiceGovernanceNacosOptimization\Client;
 
+use Hyperf\LoadBalancer\Exception\RuntimeException;
 use Hyperf\LoadBalancer\LoadBalancerInterface;
 
 class ServiceClient extends \Hyperf\RpcClient\ServiceClient
@@ -18,5 +19,22 @@ class ServiceClient extends \Hyperf\RpcClient\ServiceClient
     protected function createNodes(): array
     {
         return [[], null];
+    }
+
+    public function __call(string $method, array $params)
+    {
+        try {
+            return parent::__call($method, $params);
+        } catch (RuntimeException $e) {
+            $newMessage = sprintf(
+                "serviceName:%s,loadBalancer:%s,method:%s,err:%s",
+                $this->serviceName,
+                $this->loadBalancer,
+                $method,
+                $e->getMessage()
+            );
+
+            throw new RuntimeException($newMessage);
+        }
     }
 }
