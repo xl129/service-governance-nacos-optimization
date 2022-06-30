@@ -9,6 +9,7 @@ use YuanxinHealthy\ServiceGovernanceNacosOptimization\Client\NacosClient;
 use YuanxinHealthy\ServiceGovernanceNacosOptimization\Client\NacosClientFactory;
 use YuanxinHealthy\ServiceGovernanceNacosOptimization\Client\ClientInterface;
 use YuanxinHealthy\ServiceGovernanceNacosOptimization\Client\ServiceClient;
+use YuanxinHealthy\ServiceGovernanceNacosOptimization\JsonRpc\JsonRpcTransporter;
 use YuanxinHealthy\ServiceGovernanceNacosOptimization\Listener\CreateMessageFetcherLoopListener;
 use YuanxinHealthy\ServiceGovernanceNacosOptimization\Listener\FetchInstanceOnBootListener;
 use YuanxinHealthy\ServiceGovernanceNacosOptimization\Listener\OnPipeMessageListener;
@@ -21,9 +22,11 @@ class ConfigProvider
     {
         return [
             'dependencies' => [
-                ClientInterface::class                 => Client::class,
-                NacosClient::class                     => NacosClientFactory::class,
-                \Hyperf\RpcClient\ServiceClient::class => ServiceClient::class
+                ClientInterface::class                    => Client::class,
+                NacosClient::class                        => NacosClientFactory::class,
+                \Hyperf\RpcClient\ServiceClient::class    => ServiceClient::class,
+                \Hyperf\JsonRpc\JsonRpcTransporter::class => JsonRpcTransporter::class
+
             ],
             'processes'    => [
                 InstanceFetcherProcess::class

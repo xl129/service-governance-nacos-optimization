@@ -32,7 +32,8 @@
         "hyperf/event": "~2.2.0",
         "hyperf/rpc-client": "~2.2.0",
         "hyperf/service-governance": "~2.2.0",
-        "hyperf/service-governance-nacos": "v2.2.31.1"
+        "hyperf/service-governance-nacos": "v2.2.31.1",
+        "hyperf/json-rpc": "~2.2.0"
     },
     "extra": {
         "hyperf": {

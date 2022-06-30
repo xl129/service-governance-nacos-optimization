@@ -37,14 +37,12 @@ class ServiceClient extends \Hyperf\RpcClient\ServiceClient
 
             throw new RuntimeException($newMessage);
         } catch (RecvException $e) {
-            if (method_exists($this->client->getTransporter(), 'getClient')) {
-                $client = $this->client->getTransporter()->getClient();
-                $arr = $client->getpeername() ?? [];
+            if (method_exists($this->client->getTransporter(), 'getHasNode')) {
+                $node = $this->client->getTransporter()->getHasNode();
                 $newMessage = sprintf(
-                    "host:%s,address:%s,port:%s,serviceName:%s,loadBalancer:%s,method:%s,err:%s",
-                    $arr['host'],
-                    $arr['address'],
-                    $arr['port'],
+                    "host:%s,port:%s,serviceName:%s,loadBalancer:%s,method:%s,err:%s",
+                    $node->host ?? '',
+                    $node->port ?? '',
                     $this->serviceName,
                     $this->loadBalancer,
                     $method,
