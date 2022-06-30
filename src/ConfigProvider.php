@@ -26,7 +26,6 @@ class ConfigProvider
                 NacosClient::class                        => NacosClientFactory::class,
                 \Hyperf\RpcClient\ServiceClient::class    => ServiceClient::class,
                 \Hyperf\JsonRpc\JsonRpcTransporter::class => JsonRpcTransporter::class
-
             ],
             'processes'    => [
                 InstanceFetcherProcess::class
