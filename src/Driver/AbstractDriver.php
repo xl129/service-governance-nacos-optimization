@@ -64,6 +64,13 @@ abstract class AbstractDriver implements DriverInterface
     protected string $driverName = '';
 
     /**
+     * 清除掉序列化之后的缓存
+     *
+     * @var bool
+     */
+    protected bool $isClearCacheNodes = false;
+
+    /**
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -97,23 +104,36 @@ abstract class AbstractDriver implements DriverInterface
         Coroutine::create(function () {
             $interval = $this->getInterval();
             retry(INF, function () use ($interval) {
-                $prevNodes = [];
+                $prevNodesSerialize = '';
                 while (true) {
                     try {
+                        // 清楚缓存
+                        if ($this->isClearCacheNodes) {
+                            $prevNodesSerialize = '';
+                        }
+
                         $coordinator = CoordinatorManager::until(Constants::WORKER_EXIT);
                         $workerExited = $coordinator->yield($interval);
                         if ($workerExited) {
                             break;
                         }
+
                         $nodes = $this->getNodes();
-                        if ($nodes !== $prevNodes) {
+                        $nodesSerialize = serialize($nodes);
+                        if ($nodesSerialize !== $prevNodesSerialize) {
                             $this->log('定时器，拉取', $nodes);
                             $this->syncNodes($nodes);
                         }
-                        $prevNodes = $nodes;
-                    } catch (Throwable $exception) {
-                        $this->logger->error((string)$exception);
-                        throw $exception;
+
+                        $prevNodesSerialize = $nodesSerialize;
+                    } catch (Throwable $e) {
+                        $this->logger->error($e->getMessage(), [
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'code' => $e->getCode(),
+                        ]);
+                    } finally {
+                        $this->isClearCacheNodes = false;
                     }
                 }
             }, $interval * 1000);
@@ -143,14 +163,18 @@ abstract class AbstractDriver implements DriverInterface
     /**
      * 定时器拉去的时候同步相关进程
      * @param array $nodes
+     * @param bool $isClearCacheNodes
      * @return void
      */
-    public function syncNodes(array $nodes): void
+    public function syncNodes(array $nodes, bool $isClearCacheNodes = false): void
     {
+        if ($isClearCacheNodes) {
+            $this->isClearCacheNodes = true;
+        }
+
+        $this->updateNodes($nodes);
         if (class_exists(ProcessCollector::class) && !ProcessCollector::isEmpty()) {
             $this->shareNodesToProcesses($nodes);
-        } else {
-            $this->updateNodes($nodes);
         }
     }
 
@@ -216,11 +240,8 @@ abstract class AbstractDriver implements DriverInterface
     protected function shareMessageToWorkers(PipeMessageInterface $message): void
     {
         if ($this->server instanceof Server) {
-            // 当前work直接先更新
+            // 当前work
             $currentWorkId = $this->server->getWorkerId();
-            if (is_numeric($currentWorkId)) {
-                $this->updateNodes($message->getData());
-            }
 
             $workerCount = $this->server->setting['worker_num'] + ($this->server->setting['task_worker_num'] ?? 0) - 1;
             for ($workerId = 0; $workerId <= $workerCount; ++$workerId) {
@@ -244,11 +265,24 @@ abstract class AbstractDriver implements DriverInterface
         $processes = ProcessCollector::all();
         if ($processes) {
             $string = serialize($message);
+            $currentWorkId = -1;
+            if ($this->server instanceof Server) {
+                // 当前work
+                $currentWorkId = $this->server->getWorkerPid();
+            }
+
             /** @var Process $process */
             foreach ($processes as $process) {
+                // 不给自己进程发消息
+                if ($currentWorkId === $process->pid) {
+                    continue;
+                }
+
                 $result = $process->exportSocket()->send($string, 10);
                 if ($result === false) {
-                    $this->logger->error('Instance synchronization failed. Please restart the server.');
+                    $this->logger->error('Instance synchronization failed.', [
+                        'info' => json_encode($process->exportSocket() ?? [])
+                    ]);
                 }
             }
         }
@@ -277,6 +311,7 @@ abstract class AbstractDriver implements DriverInterface
                     'nodes'   => $nodes
                 ]);
             } catch (Throwable $e) {
+                unset($e);
             }
         }
     }

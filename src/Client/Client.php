@@ -181,7 +181,7 @@ class Client implements ClientInterface
             foreach ($items as $item) {
                 $callables[] = function () use (&$outData, $item) {
                     $nodes = $this->getNodesOne($item);
-                    $outData[] = [
+                    $outData[$item['serviceName']] = [
                         'serviceName' => $item['serviceName'],
                         'loadBalance' => $item['loadBalance'],
                         'nodes'       => $nodes
@@ -192,7 +192,10 @@ class Client implements ClientInterface
             parallel($callables, count($callables));
         }
 
-        return $outData;
+        // 排序，外层有判断数组相等
+        ksort($outData);
+
+        return array_values($outData);
     }
 
     private function getServices()
@@ -227,6 +230,7 @@ class Client implements ClientInterface
         try {
             $this->logger->error($message, $content);
         } catch (Throwable $e) {
+            unset($e);
         }
     }
 }

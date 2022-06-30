@@ -6,3 +6,4 @@ vendor/
 .github/
 .env
 .phpunit.result.cache
+composer.lock

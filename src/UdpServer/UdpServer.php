@@ -182,7 +182,8 @@ class UdpServer
                         'serviceName' => $serviceName,
                         'loadBalance' => $loadBalance,
                         'nodes'       => $nodes
-                    ]
+                    ],
+                    true
                 ]);
             }
         }
@@ -212,6 +213,7 @@ class UdpServer
                     'content' => $content
                 ]);
             } catch (Throwable $e) {
+                unset($e);
             }
         }
     }
