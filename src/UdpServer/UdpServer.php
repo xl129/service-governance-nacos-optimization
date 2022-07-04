@@ -5,7 +5,6 @@ namespace YuanxinHealthy\ServiceGovernanceNacosOptimization\UdpServer;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\ExceptionHandler\ExceptionHandlerDispatcher;
-use Hyperf\Server\ServerFactory;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -60,6 +59,12 @@ class UdpServer
         $this->driverFactory = $container->get(DriverFactory::class);
     }
 
+    /**
+     * @param Server $server
+     * @param string $data
+     * @param array $clientInfo
+     * @return void
+     */
     public function onPacket(Server $server, string $data, array $clientInfo): void
     {
         try {
@@ -75,7 +80,7 @@ class UdpServer
                 return;
             }
 
-            $this->log('收到nacos消息', [
+            $this->logger->debug('收到nacos消息', [
                 'data' => $data,
                 'clientInfo' => $clientInfo
             ]);
@@ -171,7 +176,7 @@ class UdpServer
             // 同步其他进程
             $driver = $this->createDriverInstance();
             if (method_exists($driver, "syncNodes")) {
-                $this->log('开始同步服务变更', [
+                $this->logger->debug('开始同步服务变更', [
                     'serviceName' => $serviceName,
                     'loadBalance' => $loadBalance,
                     'nodes'       => $nodes
@@ -199,22 +204,5 @@ class UdpServer
         return $this->driverFactory->create($driver, [
             'setServer' => $this->server,
         ]);
-    }
-
-    protected function log(string $message, array $content): void
-    {
-        if (in_array($this->config->get('app_env'), ['dev', 'test'])) {
-            try {
-                /** @var Server $svr */
-                $svr = $this->container->get(ServerFactory::class)->getServer()->getServer();
-                $this->logger->debug($message, [
-                    'workPid' => $svr->getWorkerPid(),
-                    'workId'  => is_numeric($svr->getWorkerId()) ? $svr->getWorkerId() : '进程',
-                    'content' => $content
-                ]);
-            } catch (Throwable $e) {
-                unset($e);
-            }
-        }
     }
 }

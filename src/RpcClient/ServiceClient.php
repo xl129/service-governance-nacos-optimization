@@ -1,6 +1,6 @@
 <?php
 
-namespace YuanxinHealthy\ServiceGovernanceNacosOptimization\Client;
+namespace YuanxinHealthy\ServiceGovernanceNacosOptimization\RpcClient;
 
 use Hyperf\LoadBalancer\Exception\RuntimeException;
 use Hyperf\LoadBalancer\LoadBalancerInterface;
@@ -37,22 +37,14 @@ class ServiceClient extends \Hyperf\RpcClient\ServiceClient
 
             throw new RuntimeException($newMessage);
         } catch (RecvException $e) {
-            if (method_exists($this->client->getTransporter(), 'getHasNode')) {
-                $node = $this->client->getTransporter()->getHasNode();
-                $newMessage = sprintf(
-                    "host:%s,port:%s,serviceName:%s,loadBalancer:%s,method:%s,err:%s",
-                    $node->host ?? '',
-                    $node->port ?? '',
-                    $this->serviceName,
-                    $this->loadBalancer,
-                    $method,
-                    $e->getMessage()
-                );
-
-                throw new RecvException($newMessage);
-            } else {
-                throw $e;
-            }
+            $newMessage = sprintf(
+                "serviceName:%s,loadBalancer:%s,method:%s,err:%s",
+                $this->serviceName,
+                $this->loadBalancer,
+                $method,
+                $e->getMessage()
+            );
+            throw new RecvException($newMessage);
         }
     }
 }

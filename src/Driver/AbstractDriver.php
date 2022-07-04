@@ -9,7 +9,6 @@ use Hyperf\Utils\Coordinator\Constants;
 use Hyperf\Utils\Coordinator\CoordinatorManager;
 use Hyperf\Utils\Coroutine;
 use Hyperf\LoadBalancer\LoadBalancerManager;
-use Hyperf\Server\ServerFactory;
 use InvalidArgumentException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -91,7 +90,7 @@ abstract class AbstractDriver implements DriverInterface
         if (method_exists($this->client, 'getNodes')) {
             $nodes = $this->getNodes();
             $nodes && $this->updateNodes($nodes);
-            $this->log('启动服务，拉取服务', $nodes);
+            $this->logger->debug('启动服务，拉取服务', $nodes);
         }
     }
 
@@ -121,7 +120,7 @@ abstract class AbstractDriver implements DriverInterface
                         $nodes = $this->getNodes();
                         $nodesSerialize = serialize($nodes);
                         if ($nodesSerialize !== $prevNodesSerialize) {
-                            $this->log('定时器，拉取', $nodes);
+                            $this->logger->debug('定时器，拉取', $nodes);
                             $this->syncNodes($nodes);
                         }
 
@@ -295,24 +294,7 @@ abstract class AbstractDriver implements DriverInterface
      */
     public function onPipeMessage(PipeMessageInterface $pipeMessage): void
     {
-        $this->log('收到其他进程的更新消息', $pipeMessage->getData());
+        $this->logger->debug('收到其他进程的更新消息', $pipeMessage->getData());
         $this->updateNodes($pipeMessage->getData());
-    }
-
-    protected function log(string $message, array $nodes): void
-    {
-        if (in_array($this->config->get('app_env'), ['dev', 'test'])) {
-            try {
-                /** @var Server $svr */
-                $svr = $this->container->get(ServerFactory::class)->getServer()->getServer();
-                $this->logger->debug($message, [
-                    'workPid' => $svr->getWorkerPid(),
-                    'workId'  => is_numeric($svr->getWorkerId()) ? $svr->getWorkerId() : '进程',
-                    'nodes'   => $nodes
-                ]);
-            } catch (Throwable $e) {
-                unset($e);
-            }
-        }
     }
 }

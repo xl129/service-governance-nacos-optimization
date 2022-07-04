@@ -156,7 +156,7 @@ class Client implements ClientInterface
 
             return $nodes;
         } catch (Throwable $e) {
-            $this->errLog(
+            $this->logger->error(
                 sprintf(
                     "获取服务实列出错，处理出错,err:%s",
                     $e->getMessage()
@@ -223,14 +223,5 @@ class Client implements ClientInterface
         }
 
         $this->consumers = $out;
-    }
-
-    protected function errLog(string $message, array $content = [])
-    {
-        try {
-            $this->logger->error($message, $content);
-        } catch (Throwable $e) {
-            unset($e);
-        }
     }
 }
