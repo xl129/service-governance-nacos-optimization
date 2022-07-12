@@ -24,7 +24,7 @@
         "hyperf/constants": "~2.2.0",
         "hyperf/exception-handler": "~2.2.0",
         "hyperf/nacos": "~2.2.0",
-        "hyperf/process": "^2.1",
+        "hyperf/process": "~2.2.0",
         "hyperf/server": "~2.2.0",
         "hyperf/framework": "~2.2.0",
         "hyperf/utils": "~2.2.0",
